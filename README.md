@@ -1,1 +1,1 @@
-# RNN-Numpy
+# LSTM-Numpy
