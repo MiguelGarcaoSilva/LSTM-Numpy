@@ -9,11 +9,11 @@ import numpy as np
 # prediction y_pred shape (output_dim, batch_size, max_seq_len), yt_pred shape (output_dim, batch_size)
 
 class RNN:
-    def __init__(self, input_dim, hidden_dim, max_seq_len, ouput_dim):
+    def __init__(self, input_dim, hidden_dim, max_seq_len, output_dim):
         """
         RNN class
         """
-        # Initialize the weights
+        # Initialize the weightsx
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.max_seq_len = max_seq_len
@@ -65,7 +65,8 @@ class RNN:
 
     def rnn_step_forward(self, x, a0):
         """
-        RNN step forward:
+         Performs the forward propagation through the RNN and computes the cross-entropy loss.
+            It returns the loss' value as well as a "cache" storing values to be used in backpropagation.
 
         Arguments:
         x -- Input data for every time-step, of shape (n_x, m, T_x).
@@ -89,13 +90,12 @@ class RNN:
 
         for t in range(self.max_seq_len):
             # xt shape (input_dim, batch_size)
-            # a_prev shape (hidden_dim, batch_size)
+            # a_prev shape (hidden_dim, batch_size) 
             # a_next shape (hidden_dim, batch_size)
             # yt_pred shape (output_dim, batch_size)
-            
-
+    
             xt = x[:, :, t]
-            a_prev = a[:, :, t-1] if t > 0 else a0
+            a_prev = a[:, :, t-1] if t > 0 else a_prev # starts with the initial hidden state
 
             a_next, yt_pred, cache = self.rnn_cell_forward(xt, a_prev)
             caches.append(cache)
@@ -107,4 +107,52 @@ class RNN:
         # store the caches
         caches = (caches, x)
         return a, y_pred, caches
+    
+    def rnn_cell_backward(self, da_next, da_prev, dc_next, dc_prev, xt, a_prev, caches):
+        """
+        Performs the backward propagation through time to compute the gradients of the loss with respect
+        to the parameters. It returns also all the hidden states.
+        Arguments:
+        da_next -- Gradient of the next hidden state, of shape (n_a, m)
+        da_prev -- Gradient of the previous hidden state, of shape (n_a, m)
+        dc_next -- Gradient of the next cell state, of shape (n_a, m)
+        dc_prev -- Gradient of the previous cell state, of shape (n_a, m)
+        xt -- Input data for every time-step, of shape (n_x, m)
+        a_prev -- Previous hidden state, of shape (n_a, m)
+        caches -- tuple of values needed for the backward pass, contains (a_next, a_prev, xt)
+        """
+        a_next, a_prev, xt = caches
+
+        # da_next inlcuding the loss gradient with dense and softmax
+
+
+
+        # derivative of tanh
+        # a_next = np.tanh(np.dot(self.Waa, a_prev) + np.dot(self.Wax, xt)  + self.ba)
+        # dtanh = 1 - np.tanh(a_next) ** 2  
+        dtanh = da_next * (1 - a_next ** 2)
+
+        # parameters gradients
+        dWaa = np.dot(dtanh, a_prev.T)
+        dWax = np.dot(dtanh, xt.T)
+        dba = np.sum( dtanh, axis=1, keepdims=True) #sum across the batch
+
+        dxt = np.dot(self.Wax.T,  dtanh)
+        da_prev = np.dot(self.Waa.T,  dtanh)
+
+
+        pass
+
+    def rnn_backward(self):
+        pass
+
+    def update_parameters(self):
+        pass
+    
+
+    class BidirectionalRNN:
+
+        def __init__(self):
+            pass
+
 
